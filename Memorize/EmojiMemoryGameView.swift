@@ -9,22 +9,26 @@ import SwiftUI
 
 struct EmojiMemoryGameView: View {
     
-    var emojiMemoryGame: EmojiMemoryGame
-    
-    let emojis = ["👻", "🎃", "🕷️", "😈", "👻", "🎃", "🕷️", "😈", "👻", "🎃", "🕷️", "😈"]
+    @ObservedObject var emojiMemoryGame: EmojiMemoryGame
     
     var body: some View {
-        ScrollView{
-            cards
+        VStack{
+            ScrollView{
+                cards
+            }
+            Button("Shuffle"){
+                emojiMemoryGame.shuffle()
+            }
         }
         .padding()
     }
     
     var cards: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 85))]){
-            ForEach(emojis.indices, id: \.self){ index in
-                CardView(content: emojis[index])
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 85), spacing: 0)]){
+            ForEach(emojiMemoryGame.cards.indices, id: \.self){ index in
+                CardView(emojiMemoryGame.cards[index])
                     .aspectRatio(2/3, contentMode: .fit)
+                    .padding(4)
             }
         }
         .foregroundColor(.orange)
@@ -33,8 +37,11 @@ struct EmojiMemoryGameView: View {
 }
 
 struct CardView: View {
-    let content: String
-    @State var isFaceUp: Bool = true
+    let card: MemoryGame<String>.Card
+    
+    init(_ card: MemoryGame<String>.Card){
+        self.card = card
+    }
     
     var body: some View {
         ZStack {
@@ -42,12 +49,12 @@ struct CardView: View {
             Group {
                 base.foregroundColor(.white)
                 base.strokeBorder(lineWidth: 2)
-                Text(content).font(.largeTitle)
-            }.opacity(isFaceUp ? 1: 0)
-            
-            base.opacity(isFaceUp ? 0: 1)
-        }.onTapGesture {
-            isFaceUp.toggle()
+                Text(card.content)
+                    .font(.system(size: 200))
+                    .minimumScaleFactor(0.01)
+                    .aspectRatio(1, contentMode: .fit)
+            }.opacity(card.isFaceUp ? 1: 0)
+            base.opacity(card.isFaceUp ? 0: 1)
         }
     }
 }
@@ -78,5 +85,5 @@ struct CardView: View {
 
 
 #Preview {
-    EmojiMemoryGameView()
+    EmojiMemoryGameView(emojiMemoryGame: EmojiMemoryGame())
 }
